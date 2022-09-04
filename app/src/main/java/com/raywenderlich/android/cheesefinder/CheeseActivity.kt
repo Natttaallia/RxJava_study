@@ -34,6 +34,7 @@ import io.reactivex.Observable
 import kotlinx.android.synthetic.main.activity_cheeses.*
 
 class CheeseActivity : BaseSearchActivity() {
+    private lateinit var disposable: Disposable
 
     override fun onStart() {
         super.onStart()
@@ -46,21 +47,26 @@ class CheeseActivity : BaseSearchActivity() {
 
         val searchTextFlowable = Flowable.merge<String>(buttonClickStream, textChangeStream)
 
-        searchTextFlowable
-            // 1
+        disposable = searchTextObservable // change this line
             .observeOn(AndroidSchedulers.mainThread())
-            // 2
             .doOnNext { showProgress() }
             .observeOn(Schedulers.io())
             .map { cheeseSearchEngine.search(it) }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                // 3
                 hideProgress()
                 showResult(it)
             }
     }
 
+    @Override
+    override fun onStop() {
+        super.onStop()
+        if (!disposable.isDisposed) {
+            disposable.dispose()
+        }
+    }
+    
     // 1
     private fun createTextChangeObservable(): Observable<String> {
         // 2
