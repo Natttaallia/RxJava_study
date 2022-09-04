@@ -39,11 +39,14 @@ class CheeseActivity : BaseSearchActivity() {
         super.onStart()
 
         val buttonClickStream = createButtonClickObservable()
+            .toFlowable(BackpressureStrategy.LATEST) // 1
+
         val textChangeStream = createTextChangeObservable()
+            .toFlowable(BackpressureStrategy.BUFFER) // 2
 
-        val searchTextObservable = Observable.merge<String>(buttonClickStream, textChangeStream)
+        val searchTextFlowable = Flowable.merge<String>(buttonClickStream, textChangeStream)
 
-        searchTextObservable
+        searchTextFlowable
             // 1
             .observeOn(AndroidSchedulers.mainThread())
             // 2
