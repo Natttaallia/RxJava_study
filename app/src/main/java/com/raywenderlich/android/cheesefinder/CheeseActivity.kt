@@ -82,6 +82,8 @@ class CheeseActivity : BaseSearchActivity() {
         }
 
         // 7
-        return textChangeObservable.filter { it.length >= 2 }
+        return textChangeObservable
+            .filter { it.length >= 2 }
+            .debounce(1000, TimeUnit.MILLISECONDS) // add this line
     }
 }
