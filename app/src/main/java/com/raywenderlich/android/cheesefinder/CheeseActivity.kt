@@ -38,7 +38,7 @@ class CheeseActivity : BaseSearchActivity() {
     override fun onStart() {
         super.onStart()
 
-        val searchTextObservable = createButtonClickObservable()
+        val searchTextObservable = createTextChangeObservable()
 
         searchTextObservable
             // 1
@@ -56,20 +56,32 @@ class CheeseActivity : BaseSearchActivity() {
     }
 
     // 1
-    private fun createButtonClickObservable(): Observable<String> {
+    private fun createTextChangeObservable(): Observable<String> {
         // 2
-        return Observable.create { emitter ->
+        val textChangeObservable = Observable.create<String> { emitter ->
             // 3
-            searchButton.setOnClickListener {
+            val textWatcher = object : TextWatcher {
+
+                override fun afterTextChanged(s: Editable?) = Unit
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
                 // 4
-                emitter.onNext(queryEditText.text.toString())
+                override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                    s?.toString()?.let { emitter.onNext(it) }
+                }
             }
 
             // 5
+            queryEditText.addTextChangedListener(textWatcher)
+
+            // 6
             emitter.setCancellable {
-                // 6
-                searchButton.setOnClickListener(null)
+                queryEditText.removeTextChangedListener(textWatcher)
             }
         }
+
+        // 7
+        return textChangeObservable
     }
 }
