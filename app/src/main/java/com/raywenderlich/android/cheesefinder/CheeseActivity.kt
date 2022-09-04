@@ -38,7 +38,10 @@ class CheeseActivity : BaseSearchActivity() {
     override fun onStart() {
         super.onStart()
 
-        val searchTextObservable = createTextChangeObservable()
+        val buttonClickStream = createButtonClickObservable()
+        val textChangeStream = createTextChangeObservable()
+
+        val searchTextObservable = Observable.merge<String>(buttonClickStream, textChangeStream)
 
         searchTextObservable
             // 1
@@ -85,5 +88,23 @@ class CheeseActivity : BaseSearchActivity() {
         return textChangeObservable
             .filter { it.length >= 2 }
             .debounce(1000, TimeUnit.MILLISECONDS) // add this line
+    }
+
+    // 1
+    private fun createButtonClickObservable(): Observable<String> {
+        // 2
+        return Observable.create { emitter ->
+            // 3
+            searchButton.setOnClickListener {
+                // 4
+                emitter.onNext(queryEditText.text.toString())
+            }
+
+            // 5
+            emitter.setCancellable {
+                // 6
+                searchButton.setOnClickListener(null)
+            }
+        }
     }
 }
