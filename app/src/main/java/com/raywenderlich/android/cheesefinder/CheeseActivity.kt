@@ -82,6 +82,6 @@ class CheeseActivity : BaseSearchActivity() {
         }
 
         // 7
-        return textChangeObservable
+        return textChangeObservable.filter { it.length >= 2 }
     }
 }
