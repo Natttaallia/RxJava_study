@@ -37,17 +37,23 @@ class CheeseActivity : BaseSearchActivity() {
 
     override fun onStart() {
         super.onStart()
-        // 1
+
         val searchTextObservable = createButtonClickObservable()
 
         searchTextObservable
+            // 1
+            .subscribeOn(AndroidSchedulers.mainThread())
             // 2
-            .subscribe { query ->
-                // 3
-                showResult(cheeseSearchEngine.search(query))
+            .observeOn(Schedulers.io())
+            // 3
+            .map { cheeseSearchEngine.search(it) }
+            // 4
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                showResult(it)
             }
     }
-    
+
     // 1
     private fun createButtonClickObservable(): Observable<String> {
         // 2
